@@ -1,19 +1,23 @@
+include <BOSL2/std.scad>
+include <BOSL2/joiners.scad>
+
+
 /* [Render] */
 
-// Part to export
-part = "all"; // ["all", "insert", "grid"]
+part_insert = true;
+part_grid = true;
+part_edge_left = false;
+part_edge_right = false;
+part_edge_top = false;
+part_edge_bottom = false;
 
 /* [Size] */
 rows = 3;
 columns = 3;
-edge_left = false;
-edge_right = false;
-edge_top = false;
-edge_bottom = false;
 
 /* [Design] */
 
-flush = true;
+flush = false;
 
 /* [hidden] */
 
@@ -39,14 +43,13 @@ module chamfer()
 
 }
 
-module grid(h2 = 0)
+module grid(pos = 0, h)
 {
-   h = 0.5;
    or = height / 2;
    ir = or - grid_r + overlap;
    difference() {
-      translate([0, 0, 6 - recess - h]) rotate([0, 0, 30]) cylinder(h = h + h2, r = or, $fn=6);
-      translate([0, 0, 6 - recess - h]) rotate([0, 0, 30]) cylinder(h = h + h2, r = ir, $fn=6);
+      translate([0, 0, pos]) rotate([0, 0, 30]) cylinder(h = h, r = or, $fn=6);
+      translate([0, 0, pos]) rotate([0, 0, 30]) cylinder(h = h, r = ir, $fn=6);
    }
 }
 
@@ -80,15 +83,7 @@ module insert()
       cylinder(8, 2, 2);
 
       // Subtract where grid is going
-      grid(10);
-   }
-}
-
-module white2()
-{
-   difference() {
-      insert();
-      grid(10);
+      grid(6 - recess - 0.5, 10);
    }
 }
 
@@ -96,8 +91,8 @@ module hex()
 {
    difference() {
       union() {
-         if (part == "insert" || part == "all") insert();
-         if (part == "grid" || part == "all") grid();
+         if (part_insert) insert();
+         if (part_grid) grid(6 - recess - 0.5, 0.5);
       }
       chamfer();
    }
@@ -112,8 +107,45 @@ for (ix=[0:1:columns-1]) {
    }
 }
 
-if (edge_left) {
-
+if (part_edge_left) {
+   ix = -1;
+   for (iy=[1:2:rows-1]) {
+      translate([ix * width + width/2, 3/4 * height * iy, 0]) {
+         difference() {
+            grid(0, 6 - recess);
+            translate([-width, -1.5 * height / 2, 0]) cube([width, 1.5 * height, 6]);
+         }
+         translate([-grid_r/2, -1.5 * height / 2, 0]) cube([grid_r, 1.5 * height, 6 - recess]);
+      }
+   }
 }
 
+/*
+module test_pair(length, width, snap, thickness, compression, lock=false)
+{
+  depth = 5;
+  extra_depth = 10;// Change this to 0.4 for closed sockets
+  cuboid([max(width+5,12),12, depth], chamfer=.5, edges=[FRONT,"Y"], anchor=BOTTOM)
+      attach(BACK)
+        rabbit_clip(type="pin",length=length, width=width,snap=snap,thickness=thickness,depth=depth,
+                    compression=compression,lock=lock);
+  right(width+13)
+  diff("remove")
+      cuboid([width+8,max(12,length+2),depth+3], chamfer=.5, edges=[FRONT,"Y"], anchor=BOTTOM)
+        tag("remove")
+          attach(BACK)
+            rabbit_clip(type="socket",length=length, width=width,snap=snap,thickness=thickness,
+                        depth=depth+extra_depth, lock=lock,compression=0);
+}
+left(37)ydistribute(spacing=28){
+  test_pair(length=6, width=7, snap=0.25, thickness=0.8, compression=0.1);
+  test_pair(length=3.5, width=7, snap=0.1, thickness=0.8, compression=0.1);  // snap = 0.2 gives a firmer connection
+  test_pair(length=3.5, width=5, snap=0.1, thickness=0.8, compression=0.1);  // hard to take apart
+}
+right(17)ydistribute(spacing=28){
+  test_pair(length=12, width=10, snap=1, thickness=1.2, compression=0.2);
+  test_pair(length=8, width=7, snap=0.75, thickness=0.8, compression=0.2, lock=true); // With lock, very firm and irreversible
+  test_pair(length=8, width=7, snap=0.75, thickness=0.8, compression=0.2, lock=true); // With lock, very firm and irreversible
+}
+*/
 
