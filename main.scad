@@ -6,10 +6,10 @@ include <BOSL2/joiners.scad>
 
 part_insert = true;
 part_grid = true;
-part_edge_left = false;
-part_edge_right = false;
-part_edge_top = false;
-part_edge_bottom = false;
+part_edge_left = true;
+part_edge_right = true;
+part_edge_top = true;
+part_edge_bottom = true;
 
 /* [Size] */
 rows = 3;
@@ -27,6 +27,8 @@ height = 48.5;
 grid_r = 2.8;
 overlap = flush ? 0 : 1.8;
 recess = flush ? 0 : 2;
+
+epsilon = 0.01;
 
 $fa = 1;
 $fs = 0.4;
@@ -113,9 +115,58 @@ if (part_edge_left) {
       translate([ix * width + width/2, 3/4 * height * iy, 0]) {
          difference() {
             grid(0, 6 - recess);
-            translate([-width, -1.5 * height / 2, 0]) cube([width, 1.5 * height, 6]);
+            // Cut half of grid
+            translate([-width - epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
-         translate([-grid_r/2, -1.5 * height / 2, 0]) cube([grid_r, 1.5 * height, 6 - recess]);
+         // Frame
+         translate([-grid_r, -1.5 * height / 2 - epsilon, 0]) cube([grid_r, 1.5 * height + epsilon*2, 6 - recess]);
+      }
+   }
+}
+
+if (part_edge_right) {
+   ix = columns;
+   for (iy=[0:2:rows-1]) {
+      translate([ix * width, 3/4 * height * iy, 0]) {
+         difference() {
+            grid(0, 6 - recess);
+            // Cut half of grid
+            translate([epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
+         }
+         // Frame
+         translate([0, -1.5 * height / 2 - epsilon, 0]) cube([grid_r, 1.5 * height + epsilon*2, 6 - recess]);
+      }
+   }
+}
+
+if (part_edge_bottom) {
+   iy = -1;
+   for (ix=[0:1:columns-1]) {
+      translate([ix * width + width/2, 3/4 * height * iy, 0]) {
+         difference() {
+            grid(0, 6 - recess);
+            // Cut half of grid
+            translate([-width/2 - epsilon, -height + epsilon, 0]) cube([width + 2*epsilon, height, 6]);
+         }
+         // Frame
+         translate([-width/2 - epsilon, -grid_r, 0]) cube([width + epsilon*2, grid_r, 6 - recess]);
+      }
+   }
+}
+
+
+// todo even/oneven rows
+if (part_edge_top) {
+   iy = rows;
+   for (ix=[0:1:columns-1]) {
+      translate([ix * width + width/2, 3/4 * height * iy, 0]) {
+         difference() {
+            grid(0, 6 - recess);
+            // Cut half of grid
+            translate([-width/2 - epsilon, -epsilon, 0]) cube([width + 2*epsilon, height, 6]);
+         }
+         // Frame
+         translate([-width/2 - epsilon, 0, 0]) cube([width + epsilon*2, grid_r, 6 - recess]);
       }
    }
 }
