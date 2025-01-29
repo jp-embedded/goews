@@ -171,6 +171,41 @@ if (part_edge_top) {
    }
 }
 
+// Add corners
+// todo: add grid in corner here
+if (part_edge_left && part_edge_bottom) {
+   corner_x = -width/2;
+   corner_y = -3/4 * height;
+   translate([corner_x - grid_r, corner_y - grid_r]) {
+      cube([width, grid_r, 6 - recess]);
+      cube([grid_r, height, 6 - recess]);
+   }
+}
+if (part_edge_left && part_edge_top) {
+   corner_x = -width/2;
+   corner_y = rows * height - 3/4 * height;
+   translate([corner_x - grid_r, corner_y]) {
+      cube([width, grid_r, 6 - recess]);
+      translate([0, -height, 0]) cube([grid_r, height, 6 - recess]);
+   }
+}
+if (part_edge_right && part_edge_top) {
+   corner_x = columns * width;
+   corner_y = rows * height - 3/4 * height;
+   translate([corner_x, corner_y]) {
+      translate([-width + grid_r, 0, 0]) cube([width, grid_r, 6 - recess]);
+      translate([0, -height + grid_r, 0]) cube([grid_r, height, 6 - recess]);
+   }
+}
+if (part_edge_right && part_edge_bottom) {
+   corner_x = columns * width;
+   corner_y = -3/4 * height;
+   translate([corner_x, corner_y - grid_r]) {
+      translate([-width + grid_r, 0, 0]) cube([width, grid_r, 6 - recess]);
+      cube([grid_r, height, 6 - recess]);
+   }
+}
+
 /*
 module test_pair(length, width, snap, thickness, compression, lock=false)
 {
