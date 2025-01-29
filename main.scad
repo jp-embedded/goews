@@ -172,7 +172,7 @@ if (part_edge_top) {
 }
 
 // Add corners
-// todo: add grid in corner here
+// todo: add quarter grids in some corners here
 if (part_edge_left && part_edge_bottom) {
    corner_x = -width/2;
    corner_y = -3/4 * height;
