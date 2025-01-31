@@ -33,6 +33,20 @@ epsilon = 0.01;
 $fa = 1;
 $fs = 0.4;
 
+
+module pin()
+{
+   rabbit_clip(type="pin",length=4, width=5,snap=0.5,thickness=0.8,
+      depth=2, compression=0.3,lock=false);
+}
+
+module socket()
+{
+   rabbit_clip(type="socket",length=4, width=5,snap=0.5,thickness=0.8, 
+      depth=2, lock=false,compression=0);
+}
+
+
 module chamfer()
 {
    difference() {
@@ -45,13 +59,20 @@ module chamfer()
 
 }
 
-module grid(pos = 0, h)
+module grid(pos = 0, h, snap = false)
 {
    or = height / 2;
    ir = or - grid_r + overlap;
    difference() {
       translate([0, 0, pos]) rotate([0, 0, 30]) cylinder(h = h, r = or, $fn=6);
       translate([0, 0, pos]) rotate([0, 0, 30]) cylinder(h = h, r = ir, $fn=6);
+   }
+
+   if (snap) {
+      rotate([0, 0, -30]) translate([0, 21 - epsilon, 1]) rotate([270, 0, 0]) pin();
+      rotate([0, 0,  30]) translate([0, 21 - epsilon, 1]) rotate([270, 0, 0]) pin();
+      rotate([0, 0, 150]) translate([0, 21 - epsilon, 1]) rotate([270, 0, 0]) pin();
+      rotate([0, 0, 210]) translate([0, 21 - epsilon, 1]) rotate([270, 0, 0]) pin();
    }
 }
 
@@ -86,6 +107,12 @@ module insert()
 
       // Subtract where grid is going
       grid(6 - recess - 0.5, 10);
+
+      // Socket
+      rotate([0, 0, -30]) translate([0, 21 + epsilon, 1 - epsilon]) rotate([270, 0, 0]) socket();
+      rotate([0, 0,  30]) translate([0, 21 + epsilon, 1 - epsilon]) rotate([270, 0, 0]) socket();
+      rotate([0, 0, 150]) translate([0, 21 + epsilon, 1 - epsilon]) rotate([270, 0, 0]) socket();
+      rotate([0, 0, 210]) translate([0, 21 + epsilon, 1 - epsilon]) rotate([270, 0, 0]) socket();
    }
 }
 
@@ -114,7 +141,7 @@ if (part_edge_left) {
    for (iy=[1:2:rows-1]) {
       translate([ix * width + width/2, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, true);
             // Cut half of grid
             translate([-width - epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
@@ -129,7 +156,7 @@ if (part_edge_right) {
    for (iy=[0:2:rows-1]) {
       translate([ix * width, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, true);
             // Cut half of grid
             translate([epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
@@ -144,7 +171,7 @@ if (part_edge_bottom) {
    for (ix=[0:1:columns-1]) {
       translate([ix * width + width/2, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, true);
             // Cut half of grid
             translate([-width/2 - epsilon, -height + epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          }
@@ -161,7 +188,7 @@ if (part_edge_top) {
    for (ix=[0:1:columns-1]) {
       translate([ix * width + width/2, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, true);
             // Cut half of grid
             translate([-width/2 - epsilon, -epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          }
@@ -205,33 +232,4 @@ if (part_edge_right && part_edge_bottom) {
       cube([grid_r, height, 6 - recess]);
    }
 }
-
-/*
-module test_pair(length, width, snap, thickness, compression, lock=false)
-{
-  depth = 5;
-  extra_depth = 10;// Change this to 0.4 for closed sockets
-  cuboid([max(width+5,12),12, depth], chamfer=.5, edges=[FRONT,"Y"], anchor=BOTTOM)
-      attach(BACK)
-        rabbit_clip(type="pin",length=length, width=width,snap=snap,thickness=thickness,depth=depth,
-                    compression=compression,lock=lock);
-  right(width+13)
-  diff("remove")
-      cuboid([width+8,max(12,length+2),depth+3], chamfer=.5, edges=[FRONT,"Y"], anchor=BOTTOM)
-        tag("remove")
-          attach(BACK)
-            rabbit_clip(type="socket",length=length, width=width,snap=snap,thickness=thickness,
-                        depth=depth+extra_depth, lock=lock,compression=0);
-}
-left(37)ydistribute(spacing=28){
-  test_pair(length=6, width=7, snap=0.25, thickness=0.8, compression=0.1);
-  test_pair(length=3.5, width=7, snap=0.1, thickness=0.8, compression=0.1);  // snap = 0.2 gives a firmer connection
-  test_pair(length=3.5, width=5, snap=0.1, thickness=0.8, compression=0.1);  // hard to take apart
-}
-right(17)ydistribute(spacing=28){
-  test_pair(length=12, width=10, snap=1, thickness=1.2, compression=0.2);
-  test_pair(length=8, width=7, snap=0.75, thickness=0.8, compression=0.2, lock=true); // With lock, very firm and irreversible
-  test_pair(length=8, width=7, snap=0.75, thickness=0.8, compression=0.2, lock=true); // With lock, very firm and irreversible
-}
-*/
 
