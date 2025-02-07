@@ -26,6 +26,7 @@ width = 42;
 height = 48.5;
 
 grid_r = 2.8;
+grid_frame_r = 2.4;
 overlap = flush ? 0 : 1.6;
 recess = flush ? 0 : 2;
 
@@ -166,8 +167,8 @@ if (part_edge_left) {
             translate([-width - epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
          // Close half grid
-         h = height - grid_r*2;
-         translate([-grid_r, -h/2, 0]) cube([grid_r*2, h, 6 - recess]);
+         h = height - grid_frame_r*2;
+         translate([-grid_frame_r, -h/2, 0]) cube([grid_frame_r*2, h, 6 - recess]);
 
          // Snaps
          top_row_x_offset = (rows % 2) * width/2; // x offset is half a hex when rows are odd
@@ -175,7 +176,7 @@ if (part_edge_left) {
          pin_bottom_right();
 
          // Frame
-         translate([-grid_r, -1.5 * height / 2 - epsilon, 0]) cube([grid_r, 1.5 * height + epsilon*2, 6 - recess]);
+         translate([-grid_frame_r, -1.5 * height / 2 - epsilon, 0]) cube([grid_frame_r, 1.5 * height + epsilon*2, 6 - recess]);
       }
    }
 }
@@ -190,15 +191,15 @@ if (part_edge_right) {
             translate([epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
          // Close half grid
-         h = height - grid_r*2;
-         translate([-grid_r, -h/2, 0]) cube([grid_r*2, h, 6 - recess]);
+         h = height - grid_frame_r*2;
+         translate([-grid_frame_r, -h/2, 0]) cube([grid_frame_r*2, h, 6 - recess]);
 
          // Snaps
          if (!part_edge_top || iy < rows-1) pin_top_left();
          if (!part_edge_bottom || iy > 0) pin_bottom_left();
 
          // Frame
-         translate([0, -1.5 * height / 2 - epsilon, 0]) cube([grid_r, 1.5 * height + epsilon*2, 6 - recess]);
+         translate([0, -1.5 * height / 2 - epsilon, 0]) cube([grid_frame_r, 1.5 * height + epsilon*2, 6 - recess]);
       }
    }
 }
@@ -218,7 +219,7 @@ if (part_edge_bottom) {
          if (!part_edge_right || ix < columns-1) pin_top_right();
 
          // Frame
-         translate([-width/2 - epsilon, -grid_r, 0]) cube([width + epsilon*2, grid_r*2, 6 - recess]);
+         translate([-width/2 - epsilon, -grid_frame_r, 0]) cube([width + epsilon*2, grid_frame_r*2, 6 - recess]);
       }
    }
 }
@@ -240,7 +241,7 @@ if (part_edge_top) {
          if (!part_edge_right || ix < columns-1 || top_row_x_offset == 0) pin_bottom_right();
 
          // Frame
-         translate([-width/2 - epsilon, -grid_r, 0]) cube([width + epsilon*2, grid_r*2, 6 - recess]);
+         translate([-width/2 - epsilon, -grid_frame_r, 0]) cube([width + epsilon*2, grid_frame_r*2, 6 - recess]);
       }
    }
 }
@@ -258,10 +259,10 @@ if (part_edge_left && part_edge_bottom) {
       }
       pin_top_right();
    }
-   translate([corner_x - grid_r, corner_y - grid_r]) {
-      cube([width, grid_r*2, 6 - recess]);
-      cube([grid_r*2, height/2, 6 - recess]);
-      cube([grid_r, height, 6 - recess]);
+   translate([corner_x - grid_frame_r, corner_y - grid_frame_r]) {
+      cube([width, grid_frame_r*2, 6 - recess]);
+      cube([grid_frame_r*2, height/2, 6 - recess]);
+      cube([grid_frame_r, height, 6 - recess]);
    }
 }
 if (part_edge_left && part_edge_top) {
@@ -277,10 +278,10 @@ if (part_edge_left && part_edge_top) {
       }
       pin_bottom_right();
    }
-   translate([corner_x - grid_r, corner_y - grid_r]) {
-      cube([width, grid_r*2, 6 - recess]);
-      translate([0, -height/2 + grid_r*2, 0]) cube([grid_r*2, height/2 - grid_r, 6 - recess]);
-      translate([0, -height, 0]) cube([grid_r, height, 6 - recess]);
+   translate([corner_x - grid_frame_r, corner_y - grid_frame_r]) {
+      cube([width, grid_frame_r*2, 6 - recess]);
+      translate([0, -height/2 + grid_frame_r*2, 0]) cube([grid_frame_r*2, height/2 - grid_frame_r, 6 - recess]);
+      translate([0, -height, 0]) cube([grid_frame_r, height, 6 - recess]);
    }
 }
 if (part_edge_right && part_edge_top) {
@@ -296,18 +297,18 @@ if (part_edge_right && part_edge_top) {
       }
       pin_bottom_left();
       // Close quarter grid
-      translate([-grid_r, -height/2 + grid_r, 0]) cube([grid_r*2, height/2, 6 - recess]);
+      translate([-grid_frame_r, -height/2 + grid_frame_r, 0]) cube([grid_frame_r*2, height/2, 6 - recess]);
    }
    translate([corner_x, corner_y]) {
-      translate([-width, -grid_r, 0]) cube([width + grid_r, grid_r*2, 6 - recess]);
-      translate([0, -height, 0]) cube([grid_r, height, 6 - recess]);
+      translate([-width, -grid_frame_r, 0]) cube([width + grid_frame_r, grid_frame_r*2, 6 - recess]);
+      translate([0, -height, 0]) cube([grid_frame_r, height, 6 - recess]);
    }
 }
 if (part_edge_right && part_edge_bottom) {
    corner_x = columns * width;
    corner_y = -3/4 * height;
    translate([corner_x, corner_y]) {
-      translate([-width, -grid_r, 0]) cube([width + grid_r, grid_r*2, 6 - recess]);
+      translate([-width, -grid_frame_r, 0]) cube([width + grid_frame_r, grid_frame_r*2, 6 - recess]);
    }
 }
 
