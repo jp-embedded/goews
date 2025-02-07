@@ -5,11 +5,12 @@ include <BOSL2/joiners.scad>
 /* [Render] */
 
 part_insert = true;
-part_grid = true;
+part_insert_grid = true;
 part_edge_left = true;
 part_edge_right = true;
 part_edge_top = true;
 part_edge_bottom = true;
+part_clip = true;
 
 /* [Size] */
 rows = 3;
@@ -25,7 +26,7 @@ width = 42;
 height = 48.5;
 
 grid_r = 2.8;
-overlap = flush ? 0 : 1.8;
+overlap = flush ? 0 : 1.6;
 recess = flush ? 0 : 2;
 
 epsilon = 0.01;
@@ -34,16 +35,24 @@ $fa = 1;
 $fs = 0.4;
 
 
+snap_depth = 0.3;
+
 module pin()
 {
-   rabbit_clip(type="pin",length=4, width=5,snap=0.45,thickness=0.8,
+   rabbit_clip(type="pin",length=4, width=5,snap=snap_depth,thickness=0.8,
+      depth=2, compression=0.3,lock=false);
+}
+
+module pin_double()
+{
+   rabbit_clip(type="double",length=4, width=5,snap=snap_depth,thickness=0.8,
       depth=2, compression=0.3,lock=false);
 }
 
 module socket()
 {
-   rabbit_clip(type="socket",length=4, width=5,snap=0.45,thickness=0.8, 
-      depth=2, lock=false,compression=0);
+   rabbit_clip(type="socket",length=4, width=5,snap=snap_depth,thickness=0.8, 
+      depth=2.2, lock=false,compression=0);
 }
 
 
@@ -59,10 +68,11 @@ module chamfer()
 
 }
 
-module grid(pos = 0, h)
+module grid(pos = 0, h, do_overlap = true)
 {
    or = height / 2;
-   ir = or - grid_r + overlap;
+   ol = do_overlap ? overlap : 0;
+   ir = or - grid_r + ol;
    difference() {
       translate([0, 0, pos]) rotate([0, 0, 30]) cylinder(h = h, r = or, $fn=6);
       translate([0, 0, pos]) rotate([0, 0, 30]) cylinder(h = h, r = ir, $fn=6);
@@ -131,7 +141,7 @@ module hex()
    difference() {
       union() {
          if (part_insert) insert();
-         if (part_grid) grid(6 - recess - 0.5, 0.5);
+         if (part_insert_grid) grid(6 - recess - 0.5, 0.5);
       }
       chamfer();
    }
@@ -151,10 +161,13 @@ if (part_edge_left) {
    for (iy=[1:2:rows-1]) {
       translate([ix * width + width/2, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, false);
             // Cut half of grid
             translate([-width - epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
+         // Close half grid
+         h = height - grid_r*2;
+         translate([-grid_r, -h/2, 0]) cube([grid_r*2, h, 6 - recess]);
 
          // Snaps
          top_row_x_offset = (rows % 2) * width/2; // x offset is half a hex when rows are odd
@@ -172,10 +185,13 @@ if (part_edge_right) {
    for (iy=[0:2:rows-1]) {
       translate([ix * width, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, false);
             // Cut half of grid
             translate([epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
          }
+         // Close half grid
+         h = height - grid_r*2;
+         translate([-grid_r, -h/2, 0]) cube([grid_r*2, h, 6 - recess]);
 
          // Snaps
          if (!part_edge_top || iy < rows-1) pin_top_left();
@@ -192,7 +208,7 @@ if (part_edge_bottom) {
    for (ix=[0:1:columns-1]) {
       translate([ix * width + width/2, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, false);
             // Cut half of grid
             translate([-width/2 - epsilon, -height + epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          }
@@ -202,7 +218,7 @@ if (part_edge_bottom) {
          if (!part_edge_right || ix < columns-1) pin_top_right();
 
          // Frame
-         translate([-width/2 - epsilon, -grid_r, 0]) cube([width + epsilon*2, grid_r, 6 - recess]);
+         translate([-width/2 - epsilon, -grid_r, 0]) cube([width + epsilon*2, grid_r*2, 6 - recess]);
       }
    }
 }
@@ -214,7 +230,7 @@ if (part_edge_top) {
    for (ix=[0:1:columns-1]) {
       translate([ix * width + top_row_x_offset, 3/4 * height * iy, 0]) {
          difference() {
-            grid(0, 6 - recess);
+            grid(0, 6 - recess, false);
             // Cut half of grid
             translate([-width/2 - epsilon, -epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          }
@@ -224,7 +240,7 @@ if (part_edge_top) {
          if (!part_edge_right || ix < columns-1 || top_row_x_offset == 0) pin_bottom_right();
 
          // Frame
-         translate([-width/2 - epsilon, 0, 0]) cube([width + epsilon*2, grid_r, 6 - recess]);
+         translate([-width/2 - epsilon, -grid_r, 0]) cube([width + epsilon*2, grid_r*2, 6 - recess]);
       }
    }
 }
@@ -236,14 +252,15 @@ if (part_edge_left && part_edge_bottom) {
    translate([corner_x, corner_y]) {
       // Quarter grid in corner
       difference() {
-         grid(0, 6 - recess);
+         grid(0, 6 - recess, false);
          translate([-width/2 - epsilon, -height + epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          translate([-width - epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
       }
       pin_top_right();
    }
    translate([corner_x - grid_r, corner_y - grid_r]) {
-      cube([width, grid_r, 6 - recess]);
+      cube([width, grid_r*2, 6 - recess]);
+      cube([grid_r*2, height/2, 6 - recess]);
       cube([grid_r, height, 6 - recess]);
    }
 }
@@ -254,14 +271,15 @@ if (part_edge_left && part_edge_top) {
    if (top_row_x_offset > 0) translate([corner_x, corner_y]) {
       // Quarter grid in corner
       difference() {
-         grid(0, 6 - recess);
+         grid(0, 6 - recess, false);
          translate([-width/2 - epsilon, -epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          translate([-width - epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
       }
       pin_bottom_right();
    }
-   translate([corner_x - grid_r, corner_y]) {
-      cube([width, grid_r, 6 - recess]);
+   translate([corner_x - grid_r, corner_y - grid_r]) {
+      cube([width, grid_r*2, 6 - recess]);
+      translate([0, -height/2 + grid_r*2, 0]) cube([grid_r*2, height/2 - grid_r, 6 - recess]);
       translate([0, -height, 0]) cube([grid_r, height, 6 - recess]);
    }
 }
@@ -272,23 +290,28 @@ if (part_edge_right && part_edge_top) {
    if (top_row_x_offset == 0) translate([corner_x, corner_y]) {
       // Quarter grid in corner
       difference() {
-         grid(0, 6 - recess);
+         grid(0, 6 - recess, false);
          translate([-width/2 - epsilon, -epsilon, 0]) cube([width + 2*epsilon, height, 6]);
          translate([epsilon, -1.5 * height/2 - epsilon, 0]) cube([width, 1.5 * height + epsilon*2, 6]);
       }
       pin_bottom_left();
+      // Close quarter grid
+      translate([-grid_r, -height/2 + grid_r, 0]) cube([grid_r*2, height/2, 6 - recess]);
    }
    translate([corner_x, corner_y]) {
-      translate([-width + grid_r, 0, 0]) cube([width, grid_r, 6 - recess]);
-      translate([0, -height + grid_r, 0]) cube([grid_r, height, 6 - recess]);
+      translate([-width, -grid_r, 0]) cube([width + grid_r, grid_r*2, 6 - recess]);
+      translate([0, -height, 0]) cube([grid_r, height, 6 - recess]);
    }
 }
 if (part_edge_right && part_edge_bottom) {
    corner_x = columns * width;
    corner_y = -3/4 * height;
-   translate([corner_x, corner_y - grid_r]) {
-      translate([-width + grid_r, 0, 0]) cube([width, grid_r, 6 - recess]);
-      cube([grid_r, height, 6 - recess]);
+   translate([corner_x, corner_y]) {
+      translate([-width, -grid_r, 0]) cube([width + grid_r, grid_r*2, 6 - recess]);
    }
+}
+
+if (part_clip) {
+   translate([-width, 0, 0]) pin_double();
 }
 
