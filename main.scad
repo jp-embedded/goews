@@ -99,7 +99,7 @@ module pin_bottom_right()
 module insert()
 {
    old_hole_y = -18;
-   new_hole_y = -16.25;
+   new_hole_y = -16.5;
 
    difference() {
       union() {
@@ -114,16 +114,16 @@ module insert()
 
          // support for new hole on back side
          translate([0, new_hole_y, 0])
-         cylinder(4, 6, 6);
+         cylinder(4, 5, 5);
       }
 
       // hole for screw head
-      translate([0, new_hole_y, 5])
-      cylinder(3, 3.5, 3.5);
+      translate([0, new_hole_y, 3])
+      cylinder(10, 4, 4);
 
       // hole for screw
       translate([0, new_hole_y, -1])
-      cylinder(8, 2, 2);
+      cylinder(10, 2, 2);
 
       // Subtract where grid is going
       grid(6 - recess - 0.5, 10);
