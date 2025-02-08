@@ -13,8 +13,8 @@ part_edge_bottom = true;
 part_clip = true;
 
 /* [Size] */
-rows = 3;
-columns = 3;
+rows = 6;
+columns = 5;
 
 /* [Design] */
 
@@ -25,9 +25,9 @@ flush = false;
 width = 42;
 height = 48.5;
 
-grid_r = 2.8;
-grid_frame_r = 2.4;
-overlap = flush ? 0 : 1.6;
+grid_r = 2;
+grid_frame_r = 1.7;
+overlap = flush ? 0 : (grid_r - 1.0);
 recess = flush ? 0 : 2;
 
 epsilon = 0.01;
@@ -53,7 +53,7 @@ module pin_double()
 module socket()
 {
    rabbit_clip(type="socket",length=4, width=5,snap=snap_depth,thickness=0.8, 
-      depth=2.2, lock=false,compression=0);
+      depth=2.4, lock=false,compression=0);
 }
 
 
@@ -100,7 +100,7 @@ module pin_bottom_right()
 module insert()
 {
    old_hole_y = -18;
-   new_hole_y = -16.5;
+   new_hole_y = -16.7;
 
    difference() {
       union() {
