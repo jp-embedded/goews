@@ -7,8 +7,8 @@ include <BOSL2/joiners.scad>
 part_insert = true;
 part_insert_grid = true;
 part_edge_left = true;
-part_edge_right = true;
 part_edge_top = true;
+part_edge_right = true;
 part_edge_bottom = true;
 part_clip = true;
 
